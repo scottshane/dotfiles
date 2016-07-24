@@ -1,0 +1,13 @@
+function func(){
+  this.fistname = fn || "adam";
+}
+var fh = () => (test) 'hi';
+
+var obj = {
+  name: 'scott',
+  age: 46, 
+  gender: 'male'
+};
+
+var arr = [1,2,3];
+

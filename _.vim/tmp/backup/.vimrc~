@@ -1,0 +1,276 @@
+set nocompatible
+filetype off
+execute pathogen#infect()
+execute pathogen#helptags()
+
+syntax on
+filetype plugin indent on
+
+set shm+=I                        " set the into message to off
+set backup                        " enable backups
+set noswapfile                    " it's 2013, Vim.
+set synmaxcol=800                 " no Highlight lines longer the 800 char.
+set noerrorbells                  " Disable Bell and Flash
+set mousehide                     " hide mouse when typing
+set mouse=n                       " scroll vim not terminal
+set laststatus=2                  " Always show statusline
+set linespace=2                   " Set Line Height
+set undodir=~/.vim/tmp/undo//     " undo files
+set backupdir=~/.vim/tmp/backup// " backups
+set directory=~/.vim/tmp/swap//   " swap files
+set clipboard=unnamed             " use system clipboard
+set notimeout                     "| Time out on keycodes but not  
+set ttimeout                      "| remapping, makes terminal Vim sane.
+set ttimeoutlen=10
+set ttyfast                       " Optimize for fast terminal connection
+
+set lazyredraw                     "| Don't update the display while 
+                                   "| executing macros
+set ruler
+set number                         " Show line numbers
+set hidden                         " Switch between buffers without saving
+
+set list!
+set listchars=eol:¬,tab:▸-,trail:.,extends:>,precedes:<,nbsp:_
+set fillchars=vert:\│
+
+set autochdir                      " CWD to that of current file
+autocmd BufEnter * silent! lcd %:p:h
+
+" visual shift (doesnt exit Visual node)
+vnoremap < <gv
+vnoremap > >gv
+
+
+set completeopt=longest,menuone
+""""""""""""""""""""""""""""""""""""""""""""""""""
+" => CSS AUTOCOMPLETE 
+""""""""""""""""""""""""""""""""""""""""""""""""""
+setl omnifunc=csscomplete#CompleteCSS
+autocmd BufNewFile,BufRead *.scss set ft=scss.css
+autocmd BufNewFile,BufRead *.less set ft=less.css
+
+""""""""""""""""""""""""""""""""""""""""""""""""""
+" => CONTEXTUAL CURSOR SHAPES
+""""""""""""""""""""""""""""""""""""""""""""""""""
+let &t_SI = "\<Esc>]50;CursorShape=1\x7"
+let &t_EI = "\<Esc>]50;CursorShape=0\x7"
+
+""""""""""""""""""""""""""""""""""""""""""""""""""
+" REMAPPING
+" => MOTIONS 
+""""""""""""""""""""""""""""""""""""""""""""""""""
+noremap j gj
+noremap k gk
+noremap gj j
+noremap gk k
+
+" Mimic termial motion in prompt
+cnoremap <c-a> <home>
+cnoremap <c-e> <end>a
+
+" Easy window navigation
+noremap <C-h> <C-w>h
+noremap <C-j> <C-w>j
+noremap <C-k> <C-w>k
+noremap <C-l> <C-w>l
+
+""""""""""""""""""""""""""""""""""""""""""""""""""
+" =>  ESCAPE
+""""""""""""""""""""""""""""""""""""""""""""""""""
+inoremap jk <esc>
+inoremap jl <esc>
+
+""""""""""""""""""""""""""""""""""""""""""""""""""
+" => SEARCH
+""""""""""""""""""""""""""""""""""""""""""""""""""
+nnoremap / /\v
+vnoremap / /\v
+set ignorecase
+set smartcase
+set nohlsearch
+
+""""""""""""""""""""""""""""""""""""""""""""""""""
+" => INDENTS 
+""""""""""""""""""""""""""""""""""""""""""""""""""
+set smartindent
+set autoindent
+
+""""""""""""""""""""""""""""""""""""""""""""""""""
+" => TABS 
+""""""""""""""""""""""""""""""""""""""""""""""""""
+set tabstop=2
+set shiftwidth=2
+set softtabstop=2
+set expandtab
+
+""""""""""""""""""""""""""""""""""""""""""""""""""
+" => WILD MENU
+""""""""""""""""""""""""""""""""""""""""""""""""""
+set wildmode=longest:full,full
+set wildmenu
+
+""""""""""""""""""""""""""""""""""""""""""""""""""
+" => ENABLE CODE FOLDING
+""""""""""""""""""""""""""""""""""""""""""""""""""
+set foldenable
+set foldmethod=manual
+set foldnestmax=10
+set foldlevel=1
+
+
+""""""""""""""""""""""""""""""""""""""""""""""""""
+" => COLORSCHEME
+""""""""""""""""""""""""""""""""""""""""""""""""""
+set background=dark
+colorscheme solarized
+
+""""""""""""""""""""""""""""""""""""""""""""""""""
+" => AIRLINE
+""""""""""""""""""""""""""""""""""""""""""""""""""
+let g:airline#extensions#tabline#enabled = 1
+let g:airline_powerline_fonts = 1
+""""""""""""""""""""""""""""""""""""""""""""""""""
+" => NERDTREE
+""""""""""""""""""""""""""""""""""""""""""""""""""
+let NERDTreeShowHidden=1
+let g:NERDTreeQuitOnOpen=0
+let NERDTreeMinimalUI=1
+let g:NERDTreeMapOpenInTabSilent = '<2-LeftMouse>'
+let NERDTreeIgnore=['\.DS_Store','\.svn','.\idea'] 
+
+" fix nerdTree width
+function! NerdTreeWidth()
+   :exe "normal30\<C-W>|"
+endf
+
+if has('autocmd')
+  augroup CloseNerdTreeIfLastWindow
+    autocmd!
+    autocmd BufEnter * 
+          \ if winnr("$") == 1                    |
+          \   if exists("b:NERDTreeType")         |
+          \     if b:NERDTreeType == "primary"    |
+          \       quit                            |
+          \     endif                             |
+          \   endif                               |
+          \ endif                                 |
+  augroup END
+
+  function! rc:isNTOpen()
+    return exists("t:NERDTreeBufName") && (bufwinnr(t:NERDTreeBufName) != -1)
+  endfunction
+
+  function! rc:isNTFocused()
+    return -1 != match(expand('%'), 'NERD_Tree')
+  endfunction
+
+  function! rc:syncTree()
+    if &modifiable && rc:isNTOpen() && !rc:isNTFocused() && strlen(expand('%')) > 0 && !&diff
+      NERDTreeFind
+      silent! execute "normal zz"
+      wincmd p
+    endif
+  endfunction
+
+  augroup syncNERDTree
+    au!
+    au BufEnter * call rc:syncTree()
+  augroup END
+endif
+
+""""""""""""""""""""""""""""""""""""""""""""""""""
+" return if NerdTree is open/acitve
+"function! s:isNTOpen()
+"    return exists("t:NERDTreeBufName") && (bufwinnr("t:NERDTreeBufName") != -1)
+"endfunction
+
+"call NERDTreeFind if NERDTree is active
+"function! s:syncTree()
+"    if &modifiable && s:isNTOpen() && strlen(expand('%')) > 0 && !&diff
+"      :exe NERDTreeFind
+"      wincmd p
+"    endif
+"endfunction
+
+" autocmd BufEnter * call s:syncTree()
+
+"Auto-open NERDTree and focus cursor in new document
+" autocmd VimEnter * wincmd p
+
+"Close NerdTree if its the only one left
+" autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTreeType") && b:NERDTreeType == "primary") | q | endif
+
+autocmd FileType nerdtree cnoreabbrev <buffer> bd <nop>
+
+cabbrev ntw :call NerdTreeWidth()
+cabbrev ntt NERDTreeToggle
+cabbrev ntf NERDTreeFind
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" => BUFFERGATOR
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+let g:buffergator_autodismiss_on_select=1
+let g:buffergator_viewport_split_policy='R'
+let g:buffergator_display_regime='basename'
+let g:buffergator_autoexpand_on_split=0
+
+cabbrev bgt BuffergatorToggle
+
+""""""""""""""""""""""""""""""""""""""""""""""""""
+" => SYNTASTIC 
+""""""""""""""""""""""""""""""""""""""""""""""""""
+set statusline+=%#warningmsg#
+set statusline+=%{SyntasticStatuslineFlag()}
+set statusline+=%*
+
+" let g:syntastic_html_tidy_exec = 'tidy'
+let g:syntastic_html_checkers=['']
+let g:syntastic_javascript_checkers = ['eslint']
+let g:syntastic_always_populate_loc_list = 1
+let g:syntastic_auto_loc_list = 0
+let g:syntastic_check_on_open = 1
+let g:syntastic_check_on_wq = 0
+
+""""""""""""""""""""""""""""""""""""""""""""""""""
+" => EMMET
+""""""""""""""""""""""""""""""""""""""""""""""""""
+" let g:user_emmet_leader_key='<c-y>'
+let g:user_emmet_leader_key='<c-e>'
+let g:user_emmet_settings = {
+  \  'php' : {
+  \    'extends' : 'html',
+  \    'filters' : 'c',
+  \  },
+  \  'xml' : {
+  \    'extends' : 'html',
+  \  },
+  \  'haml' : {
+  \    'extends' : 'html',
+  \  },
+  \ 'jsp' : {
+  \      'extends' : 'html',
+  \  }
+  \}
+
+""""""""""""""""""""""""""""""""""""""""""""""""""
+" => GUNDO 
+""""""""""""""""""""""""""""""""""""""""""""""""""
+cabbrev gdt GundoToggle
+
+""""""""""""""""""""""""""""""""""""""""""""""""""
+" => JAVASCRIPT-SYNTAX (pangloss)
+""""""""""""""""""""""""""""""""""""""""""""""""""
+let g:javascipt_enable_domhtmlcss=1
+let g:javascipt_ignore_javaScriptdoc=1
+
+""""""""""""""""""""""""""""""""""""""""""""""""""
+" => JAVASCRIPT-LIBRARIES-SYNTAX
+""""""""""""""""""""""""""""""""""""""""""""""""""
+let g:used_javascript_libs = 'underscore,backbone,angularjs,react,handlebars,Jasmine,chai'
+
+
+""""""""""""""""""""""""""""""""""""""""""""""""""
+" => TERN JS 
+""""""""""""""""""""""""""""""""""""""""""""""""""
+set omnifunc=tern#Complete
